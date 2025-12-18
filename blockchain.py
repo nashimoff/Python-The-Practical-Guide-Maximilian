@@ -1,6 +1,6 @@
 from functools import reduce
 import hashlib as hl
-from collections import OrderedDict
+
 import json
 import pickle
 
@@ -44,8 +44,7 @@ def load_data():
             # We need to convert  the loaded data because Transactions should use OrderedDict
             updated_transactions = []
             for tx in open_transactions:
-                updated_transaction = OrderedDict(
-                    [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])])
+                updated_transaction = Transaction(tx['sender'], tx['recipient'], tx['amount'])
                 updated_transactions.append(updated_transaction)
             open_transactions = updated_transactions
     except (IOError, IndexError):
@@ -69,6 +68,7 @@ def save_data():
             saveable_chain = [block.__dict__ for block in blockchain]
             f.write(json.dumps(saveable_chain))
             f.write('\n')
+            saveable_tx = [tx.__dict__ for tx in open_transactions]
             f.write(json.dumps(open_transactions))
             # save_data = {
             #     'chain': blockchain,
@@ -88,7 +88,7 @@ def valid_proof(transactions, last_hash, proof):
         :proof: The proof number we're testing.
     """
     # Create a string with all the hash inputs
-    guess = (str(transactions) + str(last_hash) + str(proof)).encode()
+    guess = (str([tx.to_ordered_dict() for tx in transactions]) + str(last_hash) + str(proof)).encode()
     # Hash the string
     # IMPORTANT: This is NOT the same hash as will be stored in the previous_hash. It's a not a block's hash. It's only used for the proof-of-work algorithm.
     guess_hash = hash_string_256(guess)
