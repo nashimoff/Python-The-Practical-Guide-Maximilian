@@ -10,4 +10,4 @@ class Block(Printable):
         self.transactions = transactions
         self.proof = proof
 
-    
+
