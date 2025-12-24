@@ -84,7 +84,6 @@ class Blockchain:
             proof += 1
         return proof
 
-
     def get_balance(self, participant):
         """Calculate and return the balance for a participant.
 
@@ -112,7 +111,6 @@ class Blockchain:
         # Return the total balance
         return amount_received - amount_sent
 
-
     def get_last_blockchain_value(self):
         """ Returns the last value of the current blockchain. """
         if len(self.chain) < 1:
@@ -139,34 +137,33 @@ class Blockchain:
         # }
         transaction = Transaction(sender, recipient, amount)
         verifier = Verification()
-        if verifier.verify_transaction(transaction, get_balance):
-            open_transactions.append(transaction)
-            save_data()
+        if verifier.verify_transaction(transaction, self.get_balance):
+            self.open_transactions.append(transaction)
+            self.save_data()
             return True
         return False
 
-
-def mine_block():
-    """Create a new block and add open transactions to it."""
-    # Fetch the currently last block of the blockchain
-    last_block = blockchain[-1]
-    # Hash the last block (=> to be able to compare it to the stored hash value)
-    hashed_block = hash_block(last_block)
-    proof = proof_of_work()
-    # Miners should be rewarded, so let's create a reward transaction
-    # reward_transaction = {
-    #     'sender': 'MINING',
-    #     'recipient': owner,
-    #     'amount': MINING_REWARD
-    # }
-    reward_transaction = Transaction('MINING', owner, MINING_REWARD)
-    # Copy transaction instead of manipulating the original open_transactions list
-    # This ensures that if for some reason the mining should fail, we don't have the reward transaction stored in the open transactions
-    copied_transactions = open_transactions[:]
-    copied_transactions.append(reward_transaction)
-    block = Block(len(blockchain), hashed_block, copied_transactions, proof)
-    blockchain.append(block)
-    return True
+    def mine_block(self, node):
+        """Create a new block and add open transactions to it."""
+        # Fetch the currently last block of the blockchain
+        last_block = self.chain[-1]
+        # Hash the last block (=> to be able to compare it to the stored hash value)
+        hashed_block = hash_block(last_block)
+        proof = self.proof_of_work()
+        # Miners should be rewarded, so let's create a reward transaction
+        # reward_transaction = {
+        #     'sender': 'MINING',
+        #     'recipient': owner,
+        #     'amount': MINING_REWARD
+        # }
+        reward_transaction = Transaction('MINING', node, MINING_REWARD)
+        # Copy transaction instead of manipulating the original open_transactions list
+        # This ensures that if for some reason the mining should fail, we don't have the reward transaction stored in the open transactions
+        copied_transactions = self.open_transactions[:]
+        copied_transactions.append(reward_transaction)
+        block = Block(len(self.chain), hashed_block, copied_transactions, proof)
+        self.chain.append(block)
+        return True
 
 
 
