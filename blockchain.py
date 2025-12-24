@@ -15,57 +15,44 @@ MINING_REWARD = 10
 
 class Blockchain:
     def __init__(self):
-        # Initializing our (empty) blockchain list
-        self.chain =[]
-
-
-# Unhandled transactions
-open_transactions = []
-# We are the owner of this blockchain node, hence this is our identifier (e.g. for sending coins)
-owner = 'Max'
-
-
-def load_data():
-    """Initialize blockchain + open transactions data from a file."""
-    global blockchain
-    global open_transactions
-    try:
-        with open('blockchain.txt', mode='r') as f:
-            # file_content = pickle.loads(f.read())
-            file_content = f.readlines()
-            # blockchain = file_content['chain']
-            # open_transactions = file_content['ot']
-            blockchain = json.loads(file_content[0][:-1])
-            # We need to convert  the loaded data because Transactions should use OrderedDict
-            updated_blockchain = []
-            for block in blockchain:
-                converted_tx = [Transaction(
-                    tx['sender'], tx['recipient'], tx['amount']) for tx in block['transactions']]
-                updated_block = Block(
-                    block['index'], block['previous_hash'], converted_tx, block['proof'], block['timestamp'])
-                updated_blockchain.append(updated_block)
-            blockchain = updated_blockchain
-            open_transactions = json.loads(file_content[1])
-            # We need to convert  the loaded data because Transactions should use OrderedDict
-            updated_transactions = []
-            for tx in open_transactions:
-                updated_transaction = Transaction(
-                    tx['sender'], tx['recipient'], tx['amount'])
-                updated_transactions.append(updated_transaction)
-            open_transactions = updated_transactions
-    except (IOError, IndexError):
         # Our starting block for the blockchain
         genesis_block = Block(0, '', [], 100, 0)
         # Initializing our (empty) blockchain list
-        blockchain = [genesis_block]
+        self.chain = [genesis_block]
         # Unhandled transactions
-        open_transactions = []
-    finally:
-        print('Cleanup!')
+        self.open_transactions = []
+        self.load_data()
 
-
-load_data()
-
+    def load_data(self):
+        """Initialize blockchain + open transactions data from a file."""
+        try:
+            with open('blockchain.txt', mode='r') as f:
+                # file_content = pickle.loads(f.read())
+                file_content = f.readlines()
+                # blockchain = file_content['chain']
+                # open_transactions = file_content['ot']
+                blockchain = json.loads(file_content[0][:-1])
+                # We need to convert  the loaded data because Transactions should use OrderedDict
+                updated_blockchain = []
+                for block in blockchain:
+                    converted_tx = [Transaction(
+                        tx['sender'], tx['recipient'], tx['amount']) for tx in block['transactions']]
+                    updated_block = Block(
+                        block['index'], block['previous_hash'], converted_tx, block['proof'], block['timestamp'])
+                    updated_blockchain.append(updated_block)
+                self.chain = updated_blockchain
+                open_transactions = json.loads(file_content[1])
+                # We need to convert  the loaded data because Transactions should use OrderedDict
+                updated_transactions = []
+                for tx in open_transactions:
+                    updated_transaction = Transaction(
+                        tx['sender'], tx['recipient'], tx['amount'])
+                    updated_transactions.append(updated_transaction)
+                self.open_transactions = updated_transactions
+        except (IOError, IndexError):
+            pass  
+        finally:
+            print('Cleanup!')
 
 def save_data():
     """Save blockchain + open transactions snapshot to a file."""
