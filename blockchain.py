@@ -14,7 +14,7 @@ from verification import Verification
 MINING_REWARD = 10
 
 class Blockchain:
-    def __init__(self):
+    def __init__(self, hosting_node_id):
         # Our starting block for the blockchain
         genesis_block = Block(0, '', [], 100, 0)
         # Initializing our (empty) blockchain list
@@ -22,6 +22,7 @@ class Blockchain:
         # Unhandled transactions
         self.open_transactions = []
         self.load_data()
+        self.hosting_node = hosting_node_id
 
     def load_data(self):
         """Initialize blockchain + open transactions data from a file."""
@@ -72,7 +73,6 @@ class Blockchain:
         except IOError:
             print('Saving failed!')
 
-
     def proof_of_work(self):
         """Generate a proof of work for the open transactions, the hash of the previous block and a random number (which is guessed until it fits)."""
         last_block = self.chain[-1]
@@ -84,12 +84,10 @@ class Blockchain:
             proof += 1
         return proof
 
-    def get_balance(self, participant):
+    def get_balance(self):
         """Calculate and return the balance for a participant.
-
-        Arguments:
-            :participant: The person for whom to calculate the balance.
         """
+        participant = self.hosting_node
         # Fetch a list of all sent coin amounts for the given person (empty lists are returned if the person was NOT the sender)
         # This fetches sent amounts of transactions that were already included in blocks of the blockchain
         tx_sender = [[tx.amount for tx in block.transactions
@@ -143,7 +141,7 @@ class Blockchain:
             return True
         return False
 
-    def mine_block(self, node):
+    def mine_block(self):
         """Create a new block and add open transactions to it."""
         # Fetch the currently last block of the blockchain
         last_block = self.chain[-1]
@@ -156,13 +154,16 @@ class Blockchain:
         #     'recipient': owner,
         #     'amount': MINING_REWARD
         # }
-        reward_transaction = Transaction('MINING', node, MINING_REWARD)
+        reward_transaction = Transaction('MINING', self.hosting_node, MINING_REWARD)
         # Copy transaction instead of manipulating the original open_transactions list
         # This ensures that if for some reason the mining should fail, we don't have the reward transaction stored in the open transactions
         copied_transactions = self.open_transactions[:]
         copied_transactions.append(reward_transaction)
-        block = Block(len(self.chain), hashed_block, copied_transactions, proof)
+        block = Block(len(self.chain), hashed_block, 
+                    copied_transactions, proof)
         self.chain.append(block)
+        self.open_transactions = []
+        self.save_data()
         return True
 
 
