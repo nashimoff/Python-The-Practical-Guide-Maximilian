@@ -8,7 +8,7 @@ class Node:
         # self.id = str(uuid4())
         self.id = 'MAX'
         self.blockchain = Blockchain(self.id)
-        
+
     def get_transaction_value(self):
         """ Returns the input of the user (a new transaction amount) as a float. """
         # Get the user input, transform it from a string to a float and store it in user_input
@@ -24,7 +24,7 @@ class Node:
     def print_blockchain_elements(self):
         """ Output all blocks of the blockchain. """
         # Output the blockchain list to the console
-        for block in self.blockchain.chain:
+        for block in self.blockchain.get_chain():
             print('Outputting Block')
             print(block)
         else:
@@ -57,8 +57,7 @@ class Node:
             elif user_choice == '3':
                 self.print_blockchain_elements()
             elif user_choice == '4':
-                verifier = Verification()
-                if verifier.verify_transactions(self.blockchain.open_transactions, self.blockchain.get_balance):
+                if Verification.verify_transactions(self.blockchain.open_transactions, self.blockchain.get_balance):
                     print('All transactions are valid')
                 else:
                     print('There are invalid transactions')
@@ -67,8 +66,7 @@ class Node:
                 waiting_for_input = False
             else:
                 print('Input was invalid, please pick a value from the list!')
-            verifier = Verification()
-            if not verifier.verify_chain(self.blockchain.chain):
+            if not Verification.verify_chain(self.blockchain.chain):
                 self.print_blockchain_elements()
                 print('Invalid blockchain!')
                 # Break out of the loop
